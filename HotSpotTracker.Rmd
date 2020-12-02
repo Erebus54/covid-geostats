@@ -51,50 +51,22 @@ Row {.tabset .tabset-fade}
 
 ```{r}
 #download casestatus data 
-
-library(data.table)
-
-url <- "https://data.ontario.ca/dataset/f4112442-bdc8-45d2-be3c-12efae72fb27/resource/455fd63b-603d-4608-8216-7d8647f43350/download/conposcovidloc.csv"
-
-CaseStatus <- data.table::fread(input = url, encoding = "UTF-8")
-```
-
-
-```{r}
-CaseStatus$Case_Reported_Date <- as.Date(CaseStatus$Case_Reported_Date)
-
-PHU_csums <- data.frame(CaseStatus %>% 
-  dplyr::group_by(Reporting_PHU) %>% 
-  dplyr::count(name = "csum") %>% 
-  dplyr::arrange(Reporting_PHU) %>% 
-  dplyr::mutate(Reporting_PHU = trimws(Reporting_PHU, which = "both"))
-)
-
- #fixing 5 rows that the PHU name is not verbatim as in the shp boundary file 
-PHU_csums$Reporting_PHU <- ifelse(PHU_csums$Reporting_PHU == "Huron Perth District Health Unit", "Huron Perth Health Unit", 
-                               ifelse(PHU_csums$Reporting_PHU == "Kingston, Frontenac and Lennox & Addington Public Health", "Kingston, Frontenac and Lennox and Addington Health Unit",
-                                      ifelse(PHU_csums$Reporting_PHU == "Sudbury & District Health Unit", "Sudbury and District Health Unit", 
-                                             ifelse(PHU_csums$Reporting_PHU == "Wellington-Dufferin-Guelph Public Health", "Wellington-Dufferin-Guelph Health Unit", 
-                                                    ifelse(PHU_csums$Reporting_PHU == "York Region Public Health Services", "York Region Public Health", PHU_csums$Reporting_PHU)
-                                             )
-                                      )
-                               )
-)
-```
-
-
-### <b> Cumulative per PHU </b> 
-```{r}
+PHU_csums <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
+#merging 
 csum_map <- merge(PHU_boundaries_sf, PHU_csums, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
- 
-pal <- colorNumeric("RdBu", domain = csum_map$csum, reverse = T)
- 
+```
 
+
+### <b> Choropleth Map </b> 
+```{r}
+ 
+pal <- colorNumeric("RdBu", domain = csum_map$Total_Cases, reverse = T)
+ 
 leaflet() %>% 
    setView(lat = 51.2538, lng = -85.3232, zoom = 5.25) %>%
    addProviderTiles(providers$CartoDB.Positron) %>% 
    addPolygons(data  = csum_map,
-               fillColor = ~pal(csum), 
+               fillColor = ~pal(Total_Cases), 
                weight = 2, 
                opacity = 1, 
                color = "white", 
@@ -114,19 +86,22 @@ leaflet() %>%
                ) %>%
    addFullscreenControl() %>% 
    addResetMapButton() %>% 
-   
-   ## adding locate me button 
-   addEasyButton(easyButton(
-     icon="fa-crosshairs", title="Locate Me",
-     onClick=JS("function(btn, map){ map.locate({setView: true});}"))) %>% 
-
-   addLegend("bottomright", pal = pal, values = csum_map$csum, 
+   addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
              title = "Current Cumulative Cases", 
              opacity = 0.5)
 ```
 
 ### <b> Cartogram </b> 
 
+```{r carto}
+#making a cartogram of the total cases by area
+library(rgeos)
+library(cartogram)
+library(spatstat)
+
+carto_ref <- cartogram_cont(csum_map, "Total_Cases")
+plot(carto_ref)
+```
 
 GeoStatistics
 ===================================== 

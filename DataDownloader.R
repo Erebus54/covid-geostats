@@ -30,11 +30,11 @@ CaseStatus <- df %>%
 CaseStatus$Total_Cases_Pct <- round(CaseStatus$Total_Cases/sum(CaseStatus$Total_Cases)*100,1)
 
 #fixing 5 rows that the PHU name is not verbatim as in the shp boundary file 
-PHU_csums$Reporting_PHU <- ifelse(PHU_csums$Reporting_PHU == "Huron Perth District Health Unit", "Huron Perth Health Unit", 
-                                  ifelse(PHU_csums$Reporting_PHU == "Kingston, Frontenac and Lennox & Addington Public Health", "Kingston, Frontenac and Lennox and Addington Health Unit",
-                                         ifelse(PHU_csums$Reporting_PHU == "Sudbury & District Health Unit", "Sudbury and District Health Unit", 
-                                                ifelse(PHU_csums$Reporting_PHU == "Wellington-Dufferin-Guelph Public Health", "Wellington-Dufferin-Guelph Health Unit", 
-                                                       ifelse(PHU_csums$Reporting_PHU == "York Region Public Health Services", "York Region Public Health", PHU_csums$Reporting_PHU)
+CaseStatus$Reporting_PHU <- ifelse(CaseStatus$Reporting_PHU == "Huron Perth District Health Unit", "Huron Perth Health Unit", 
+                                  ifelse(CaseStatus$Reporting_PHU == "Kingston, Frontenac and Lennox & Addington Public Health", "Kingston, Frontenac and Lennox and Addington Health Unit",
+                                         ifelse(CaseStatus$Reporting_PHU == "Sudbury & District Health Unit", "Sudbury and District Health Unit", 
+                                                ifelse(CaseStatus$Reporting_PHU == "Wellington-Dufferin-Guelph Public Health", "Wellington-Dufferin-Guelph Health Unit", 
+                                                       ifelse(CaseStatus$Reporting_PHU == "York Region Public Health Services", "York Region Public Health", CaseStatus$Reporting_PHU)
                                                 )
                                          )
                                   )
@@ -56,7 +56,7 @@ LandSizeSqKM <- c(41266.67, 1128.88,2470.52,2523.80,5314.34,
                   8800.12,20917.77,46551.02,230610.23,14146.28,
                   630.20,4147.01,1850.90,1762.13)
 
-PHU_csums <- data.frame(PHU_csums, Population, LandSizeSqKM)
+PHU_csums <- data.frame(CaseStatus, Population, LandSizeSqKM)
 
 
 
