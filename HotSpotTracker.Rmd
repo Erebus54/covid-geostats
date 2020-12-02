@@ -33,7 +33,7 @@ library(lubridate)
 
 
 library("rgdal")
-
+#write polygon data
 # st_write(PHU_boundaries_sf, "./spatial files/PHU_Boundaries.geojson")
 
 
@@ -112,8 +112,6 @@ leaflet() %>%
                  textsize = "15px",
                  direction = "auto")
                ) %>%
-   
-   addMiniMap(tiles = "CartoDB.Positron", position = "topright") %>% 
    addFullscreenControl() %>% 
    addResetMapButton() %>% 
    
@@ -127,8 +125,14 @@ leaflet() %>%
              opacity = 0.5)
 ```
 
+### <b> Cartogram </b> 
+
+
 GeoStatistics
 ===================================== 
 Row {.tabset .tabset-fade}
 -------------------------------------
+
+### <b> Spatial Autocorrelation </b> 
+### <b> Confidence Intervals </b> 
 
