@@ -36,12 +36,9 @@ library("rgdal")
 #write polygon data
 # st_write(PHU_boundaries_sf, "./spatial files/PHU_Boundaries.geojson")
 
-
-
 #read file in 
 PHU_boundaries_sf <-  geojsonio::geojson_read("./spatial files/PHU_Boundaries.geojson" , what = "sp")
 PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries_sf)
-
 ```
 
 GIS
@@ -87,7 +84,7 @@ leaflet() %>%
    addFullscreenControl() %>% 
    addResetMapButton() %>% 
    addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
-             title = "Current Cumulative Cases", 
+             title = "Total Cases", 
              opacity = 0.5)
 ```
 
