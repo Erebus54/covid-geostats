@@ -23,22 +23,21 @@ library(sf)
 library(dplyr)
 library(tidyr)
 
-library(lubridate)
-
 #read polygon data 
 # loc = "https://opendata.arcgis.com/datasets/d8fba69152e4408dabfe70e85a2688d2_44.geojson"
 # PHU_boundaries <- geojsonio::geojson_read(loc, what = "sp")
 # 
 # PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries)
 
-
 library("rgdal")
 #write polygon data
 # st_write(PHU_boundaries_sf, "./spatial files/PHU_Boundaries.geojson")
+# saveRDS(PHU_boundaries_sf, file = "PHU_Boundaries.rds")
 
 #read file in 
-PHU_boundaries_sf <-  geojsonio::geojson_read("./spatial files/PHU_Boundaries.geojson" , what = "sp")
-PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries_sf)
+# PHU_boundaries_sf <-  geojsonio::geojson_read("./spatial files/PHU_Boundaries.geojson" , what = "sp")
+# PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries_sf)
+PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 ```
 
 GIS
@@ -50,7 +49,7 @@ Row {.tabset .tabset-fade}
 #download casestatus data 
 PHU_csums <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
 #merging 
-csum_map <- merge(PHU_boundaries_sf, PHU_csums, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
+csum_map <- merge(PHU_bounds, PHU_csums, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
 ```
 
 
