@@ -1,0 +1,89 @@
+---
+title: "Covid GeoStats"
+output: 
+  flexdashboard::flex_dashboard:
+    #orientation: rows
+    social: menu
+    theme: paper
+    source_code: embed
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(DT)
+
+#download summary data 
+PHU_Summary <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
+```
+
+
+GIS
+===================================== 
+
+Column {data-width=600}
+-------------------------------------
+    
+### Map
+    
+```{r}
+
+```
+   
+Column {data-width=400}
+-------------------------------------
+   
+### Table
+
+```{r}
+DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "Total_Cases")])
+```   
+ 
+### Histogram
+    
+```{r}
+
+```
+
+
+Outcomes 
+===================================== 
+
+Acquisition Type
+===================================== 
+
+Per Capita Rates
+===================================== 
+
+
+About this Site
+===================================== 
+
+#### Last Update  
+
+`r format(Sys.time(), "%d %B, %Y")`
+
+#### Background
+*"Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less" - Marie Curie*  
+
+
+#### Code
+Code and input data used to generate this web app are available on [Github](https://github.com/Erebus54/covid-geostats).
+
+#### Sources 
+
+**Status of COVID-19 cases in Ontario** : [Open Data Ontario](https://data.ontario.ca/dataset/status-of-covid-19-cases-in-ontario), updated daily, which presents a breakdown by region, case status, age range of cases 
+
+**Census Profile, 2016 Census** : [StatsCan](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/index.cfm?Lang=E&TABID=1), queried this to obtain the areal size and population figures to compute the per capita metrics 
+
+**Ministry of Health Public Health Unit Boundaries** : [Ontario GeoHub](https://geohub.lio.gov.on.ca/datasets/d8fba69152e4408dabfe70e85a2688d2_44), contains the geographic boundaries of all 34 Public Health Units (PHUs) in Ontario, based on Statistics Canada’s Health Region Boundary File (2018)
+
+used to pull total population by health region and areal statistics to calculate per capita/density case loads 
+
+#### Author 
+
+Patrick Schnurbusch 
+
+#### Contact 
+
+patrick.schnurbusch@gmail.com
