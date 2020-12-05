@@ -10,8 +10,11 @@ runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
+library(rsconnect)
 library(flexdashboard)
 library(DT)
+library(plotly)
+library(RColorBrewer)
 
 #download summary data 
 PHU_Summary <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
@@ -36,13 +39,40 @@ Column {data-width=400}
 ### Table
 
 ```{r}
-DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "Total_Cases")])
+DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "Total_Cases")] %>% dplyr::arrange(desc(Total_Cases)),
+              class = 'cell-border stripe',
+              colnames = c("Public Health Unit", "Total Cases"), 
+              rownames = F, options = list(page_length = 10, lengthChange = FALSE)
+              )
 ```   
  
 ### Histogram
     
 ```{r}
+PHU_Summary$Reporting_PHU <- factor(PHU_Summary$Reporting_PHU, 
+                                      levels = unique(PHU_Summary$Reporting_PHU)[order(PHU_Summary$Total_Cases, decreasing = F)])
 
+
+plot_ly(data = PHU_Summary, 
+        y = ~Total_Cases, 
+        x = ~Reporting_PHU, 
+        type = 'bar', 
+        name = "Total Cases",
+        text = ~paste(Reporting_PHU, 
+                      "<br>", 
+                      format(PHU_Summary$Total_Cases, nsmall = 0, big.mark = ","), 
+                      "Total Cases", 
+                      sep = " "), 
+        
+        hoverinfo = "text", 
+        marker = list(color = '#FFC56C')) %>% 
+  
+
+  layout(xaxis = list(title = ""), 
+         yaxis = list(title = ""), 
+         barmode = 'stack',
+         hovermode = "y-unified", 
+         hoverlabel=list(bgcolor="black"))
 ```
 
 
