@@ -28,10 +28,10 @@ library(tidyr)
 #read polygon data 
 # loc = "https://opendata.arcgis.com/datasets/d8fba69152e4408dabfe70e85a2688d2_44.geojson"
 # PHU_boundaries <- geojsonio::geojson_read(loc, what = "sp")
-# 
 # PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries)
 
 library("rgdal")
+
 #write polygon data
 # st_write(PHU_boundaries_sf, "./spatial files/PHU_Boundaries.geojson")
 # saveRDS(PHU_boundaries_sf, file = "PHU_Boundaries.rds")
@@ -39,11 +39,13 @@ library("rgdal")
 #read file in 
 # PHU_boundaries_sf <-  geojsonio::geojson_read("./spatial files/PHU_Boundaries.geojson" , what = "sp")
 # PHU_boundaries_sf <- sf::st_as_sf(PHU_boundaries_sf)
+
 PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 ```
 
 GIS
 ===================================== 
+{data-height=650}
 Row {.tabset .tabset-fade}
 -------------------------------------
 
@@ -57,6 +59,7 @@ csum_map <- merge(PHU_bounds, PHU_csums, by.x = "PHU_NAME_ENG", by.y = "Reportin
 
 ### <b> Choropleth Map </b> 
 ```{r}
+<<<<<<< HEAD
 pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
 popup = paste0("<b>Country: </b>")
@@ -98,18 +101,36 @@ leaflet() %>%
   addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
             title = "Total Cases", 
             opacity = 0.5)
+=======
+pal <- colorNumeric("RdBu", domain = csum_map$Total_Cases, reverse = T)
+ 
+leaflet() %>% 
+   setView(lat = 51.2538, lng = -85.3232, zoom = 5.25) %>%
+   #addProviderTiles(providers$CartoDB.Positron) %>% 
+   addPolygons(data  = csum_map,
+               fillColor = ~pal(Total_Cases), 
+               weight = 0.5, 
+               opacity = 1, 
+               color = "white", 
+               dashArray = 3, 
+               fillOpacity = 0.25, 
+               
+               highlightOptions = highlightOptions(
+                 weight = 1, 
+                 color = "#FF0000", 
+                 fillOpacity = 0.5, 
+                 bringToFront = T)) %>%
+   addFullscreenControl() %>% 
+   addResetMapButton() %>% 
+   addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
+             title = "Total Cases", 
+             opacity = 0.5)
+>>>>>>> 1440e1fb3febe519c182958979c7193528c3e820
 ```
 
 ### <b> Cartogram </b> 
 
-```{r carto}
-#making a cartogram of the total cases by area
-library(rgeos)
-library(cartogram)
-library(spatstat)
-
-carto_ref <- cartogram_cont(csum_map, "Total_Cases")
-plot(carto_ref)
+```{r}
 ```
 
 GeoStatistics
