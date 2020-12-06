@@ -43,14 +43,22 @@ pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
 popup = paste0("<b>Country: </b>")
 
-bbox <- st_bbox(csum_map) %>% 
+#bbox <- st_bbox(csum_map) %>% 
+ # as.vector()
+
+#centers focus to current highest region via total cases 
+bbox <- st_bbox(csum_map %>% dplyr::filter(Total_Cases == max(Total_Cases))) %>% 
   as.vector()
+
 
 leaflet() %>% 
   
-  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+  setView(lat = mean(bbox[2], bbox[4]), 
+          lng = mean(bbox[1], bbox[3]), 
+          zoom = 9) %>%
 
-  addProviderTiles(providers$CartoDB.DarkMatter) %>% 
+  #addProviderTiles(providers$CartoDB.DarkMatter) %>% 
   
   addPolygons(data  = csum_map,
               fillColor = ~pal(Total_Cases), 
@@ -91,8 +99,10 @@ Column {data-width=400}
 DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "Total_Cases")] %>% dplyr::arrange(desc(Total_Cases)),
               class = 'cell-border stripe',
               colnames = c("Public Health Unit", "Total Cases"), 
-              rownames = F, options = list(page_length = 10, lengthChange = FALSE)
-              )
+              rownames = F, 
+              options = list(dom = 't',ordering = F, page_length = 34, lengthChange = FALSE,
+                             columnDefs = list(list(className = 'dt-center', targets="_all")))
+)
 ```   
  
 ### Histogram
@@ -113,7 +123,8 @@ plot_ly(data = PHU_Summary,
                       sep = " "), 
         
         hoverinfo = "text", 
-        marker = list(color = '#6EC5E9')) %>% 
+        marker = list(color = '#6EC5E9')
+        ) %>% 
   
   layout(title = "<b> Total Cases Per Health Region </b>",
          xaxis = list(title = "", zeroline = FALSE, showline = FALSE, 
@@ -131,6 +142,71 @@ Outcomes
 Acquisition Type
 ===================================== 
 
+Column {data-width=600}
+-------------------------------------
+    
+### Dominant Acquisiton Type via Cases 
+    
+```{r}
+
+#finding the most common acquistion method 
+PHU_Summary$AcqMax <- colnames(PHU_Summary[,c("CloseContact", "Outbreak", "Travel", "Unknown")])[apply(PHU_Summary[,c("CloseContact", "Outbreak", "Travel", "Unknown")],1,which.max)]
+
+Acq_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
+
+Acq_map$AcqMax <- ifelse(Acq_map$AcqMax == "CloseContact", paste0("Close Contact"), Acq_map$AcqMax)
+
+#factpal <- colorFactor(topo.colors(3), Acq_map$AcqMax)
+AcqCats <- colorFactor(palette = c("#6EC5E9", "#F4B400", "#9b4a11"), 
+                       levels = c("Close Contact", "Outbreak", "Unkown"))
+leaflet() %>% 
+  
+  setView(lat = mean(bbox[2], bbox[4]), 
+          lng = mean(bbox[1], bbox[3]), 
+          zoom = 9) %>%
+  
+  addPolygons(data  = Acq_map,
+              fillColor = ~AcqCats(AcqMax), 
+              weight = 1, 
+              opacity = 1, 
+              
+              color = "white", 
+              dashArray = 3, 
+              fillOpacity = 1, 
+              
+              highlightOptions = highlightOptions(
+                weight = 2, 
+                color = "red", 
+                fillOpacity = 1, 
+                bringToFront = T), 
+              
+              # labelOptions = labelOptions(
+              #   style = list("font-weight" = "normal", padding = "3px 8px"),
+              #   textsize = "15px",
+              #   direction = "auto")
+  ) %>%
+  
+  addFullscreenControl() %>% 
+  
+  addResetMapButton() %>% 
+  
+  addLegend("bottomright", pal = AcqCats, values = Acq_map$AcqMax, 
+            title = "Acquisition Type", 
+            opacity = 1)
+```
+   
+Column {data-width=400}
+-------------------------------------
+   
+### Table
+
+```{r}
+```   
+ 
+### Histogram
+    
+```{r}
+```
 Per Capita Rates
 ===================================== 
 
