@@ -20,11 +20,16 @@ library(leaflet)
 library(leaflet.extras)
 
 library(sf)
-
+library(rmapshaper)
 #download summary data 
 PHU_Summary <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
 #read spatial boundaries data 
 PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
+
+# simplify the boundary file
+# this will help the maps run so much faster when rendering 
+PHU_bounds <- rmapshaper::ms_simplify(PHU_bounds, keep = 0.01, keep_shapes = TRUE, 
+                                        )
 ```
 
 
@@ -37,7 +42,6 @@ Column {data-width=600}
 ### Map
     
 ```{r}
-
 csum_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
 pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
