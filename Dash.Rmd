@@ -16,8 +16,15 @@ library(DT)
 library(plotly)
 library(RColorBrewer)
 
+library(leaflet) 
+library(leaflet.extras)
+
+library(sf)
+
 #download summary data 
 PHU_Summary <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
+#read spatial boundaries data 
+PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 ```
 
 
@@ -31,6 +38,48 @@ Column {data-width=600}
     
 ```{r}
 
+csum_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
+pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
+
+popup = paste0("<b>Country: </b>")
+
+bbox <- st_bbox(csum_map) %>% 
+  as.vector()
+
+leaflet() %>% 
+  
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+
+  addProviderTiles(providers$CartoDB.DarkMatter) %>% 
+  
+  addPolygons(data  = csum_map,
+              fillColor = ~pal(Total_Cases), 
+              weight = 1, 
+              opacity = 1, 
+              
+              color = "white", 
+              dashArray = 3, 
+              fillOpacity = 0.5, 
+              
+              highlightOptions = highlightOptions(
+                weight = 2, 
+                color = "red", 
+                fillOpacity = 0.5, 
+                bringToFront = T), 
+              
+              # labelOptions = labelOptions(
+              #   style = list("font-weight" = "normal", padding = "3px 8px"),
+              #   textsize = "15px",
+              #   direction = "auto")
+              ) %>%
+  
+  addFullscreenControl() %>% 
+  
+  addResetMapButton() %>% 
+  
+  addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
+            title = "Total Cases", 
+            opacity = 0.5)
 ```
    
 Column {data-width=400}
@@ -52,7 +101,6 @@ DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "Total_Cases")] %>% dplyr:
 PHU_Summary$Reporting_PHU <- factor(PHU_Summary$Reporting_PHU, 
                                       levels = unique(PHU_Summary$Reporting_PHU)[order(PHU_Summary$Total_Cases, decreasing = F)])
 
-
 plot_ly(data = PHU_Summary, 
         y = ~Total_Cases, 
         x = ~Reporting_PHU, 
@@ -65,11 +113,12 @@ plot_ly(data = PHU_Summary,
                       sep = " "), 
         
         hoverinfo = "text", 
-        marker = list(color = '#FFC56C')) %>% 
+        marker = list(color = '#6EC5E9')) %>% 
   
-
-  layout(xaxis = list(title = ""), 
-         yaxis = list(title = ""), 
+  layout(title = "<b> Total Cases Per Health Region </b>",
+         xaxis = list(title = "", zeroline = FALSE, showline = FALSE, 
+                      showgrid = FALSE, showticklabels = FALSE), 
+         yaxis = list(title = "Total Cases"), 
          barmode = 'stack',
          hovermode = "y-unified", 
          hoverlabel=list(bgcolor="black"))

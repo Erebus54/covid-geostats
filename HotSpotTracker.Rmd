@@ -59,7 +59,6 @@ csum_map <- merge(PHU_bounds, PHU_csums, by.x = "PHU_NAME_ENG", by.y = "Reportin
 
 ### <b> Choropleth Map </b> 
 ```{r}
-<<<<<<< HEAD
 pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
 popup = paste0("<b>Country: </b>")
