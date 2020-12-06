@@ -391,9 +391,9 @@ Acq_map$popup_text <-
 
 leaflet() %>% 
   addProviderTiles(providers$CartoDB.Positron) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addPolygons(data  = Acq_map,
               fillColor = ~AcqCats(AcqMax), 
