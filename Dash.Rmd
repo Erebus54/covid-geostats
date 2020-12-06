@@ -2,10 +2,7 @@
 title: "Covid GeoStats"
 output: 
   flexdashboard::flex_dashboard:
-    #orientation: rows
-    social: menu
-    theme: paper
-    source_code: embed
+    theme: cosmo
 runtime: shiny
 ---
 
@@ -78,16 +75,14 @@ leaflet() %>%
                 fillOpacity = 0.5, 
                 bringToFront = T), 
               
-              # labelOptions = labelOptions(
-              #   style = list("font-weight" = "normal", padding = "3px 8px"),
-              #   textsize = "15px",
-              #   direction = "auto")
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")
               ) %>%
   
   addFullscreenControl() %>% 
-  
   addResetMapButton() %>% 
-  
   addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
             title = "Total Cases", 
             opacity = 0.5)
@@ -229,9 +224,12 @@ DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "CloseContact", "Outbreak"
     
 ```{r}
 ```
+
 Per Capita Rates
 ===================================== 
 
+Hotspot Analysis
+===================================== 
 
 About this Site
 ===================================== 
@@ -254,8 +252,6 @@ Code and input data used to generate this web app are available on [Github](http
 **Census Profile, 2016 Census** : [StatsCan](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/index.cfm?Lang=E&TABID=1), queried this to obtain the areal size and population figures to compute the per capita metrics 
 
 **Ministry of Health Public Health Unit Boundaries** : [Ontario GeoHub](https://geohub.lio.gov.on.ca/datasets/d8fba69152e4408dabfe70e85a2688d2_44), contains the geographic boundaries of all 34 Public Health Units (PHUs) in Ontario, based on Statistics Canada’s Health Region Boundary File (2018)
-
-used to pull total population by health region and areal statistics to calculate per capita/density case loads 
 
 #### Author 
 
