@@ -42,8 +42,8 @@ csum_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Report
 pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
 #centers focus to current highest region via total cases 
-bbox <- st_bbox(csum_map %>% dplyr::filter(Total_Cases == max(Total_Cases))) %>% 
-  as.vector()
+# bbox <- st_bbox(csum_map %>% dplyr::filter(Total_Cases == max(Total_Cases))) %>% 
+#   as.vector()
 
 csum_map$popup_text <- 
   paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
@@ -55,10 +55,10 @@ csum_map$popup_text <-
 
 leaflet() %>% 
   
-  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addProviderTiles(providers$CartoDB.Positron) %>% 
   
@@ -143,7 +143,7 @@ Column {data-width=600 .tabset .tabset-fade}
 ### Cases
 
 ```{r}
-pal <- colorNumeric("viridis", domain = csum_map$Cases_pC, reverse = F)
+pal <- colorNumeric("Blues", domain = csum_map$Cases_pC, reverse = F)
 
 #centers focus to current highest region via total cases 
 bbox <- st_bbox(csum_map %>% dplyr::filter(Cases_pC == max(Cases_pC))) %>% 
@@ -195,11 +195,11 @@ leaflet() %>%
 ### Recovered 
 
 ```{r}
-pal <- colorNumeric("viridis", domain = csum_map$Recovered_pC, reverse = F)
+pal <- colorNumeric("Greens", domain = csum_map$Recovered_pC, reverse = F)
 
 #centers focus to current highest region via total cases 
-bbox <- st_bbox(csum_map %>% dplyr::filter(Recovered_pC == max(Recovered_pC))) %>% 
-  as.vector()
+# bbox <- st_bbox(csum_map %>% dplyr::filter(Recovered_pC == max(Recovered_pC))) %>% 
+#   as.vector()
 
 csum_map$popup_text <- 
   paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
@@ -212,9 +212,9 @@ csum_map$popup_text <-
 leaflet() %>% 
   
   #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addProviderTiles(providers$CartoDB.Positron) %>% 
   
@@ -247,11 +247,11 @@ leaflet() %>%
 ### Actives 
 
 ```{r}
-pal <- colorNumeric("viridis", domain = csum_map$Actives_pC, reverse = F)
+pal <- colorNumeric("Oranges", domain = csum_map$Actives_pC, reverse = F)
 
 #centers focus to current highest region via total cases 
-bbox <- st_bbox(csum_map %>% dplyr::filter(Actives_pC == max(Actives_pC))) %>% 
-  as.vector()
+# bbox <- st_bbox(csum_map %>% dplyr::filter(Actives_pC == max(Actives_pC))) %>% 
+#   as.vector()
 
 csum_map$popup_text <- 
   paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
@@ -264,9 +264,9 @@ csum_map$popup_text <-
 leaflet() %>% 
   
   #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addProviderTiles(providers$CartoDB.Positron) %>% 
   
@@ -299,11 +299,11 @@ leaflet() %>%
 ### Deaths 
 
 ```{r}
-pal <- colorNumeric("viridis", domain = csum_map$Deaths_pC, reverse = F)
+pal <- colorNumeric("Reds", domain = csum_map$Deaths_pC, reverse = F)
 
 #centers focus to current highest region via total cases 
-bbox <- st_bbox(csum_map %>% dplyr::filter(Deaths_pC == max(Deaths_pC))) %>% 
-  as.vector()
+# bbox <- st_bbox(csum_map %>% dplyr::filter(Deaths_pC == max(Deaths_pC))) %>% 
+#   as.vector()
 
 csum_map$popup_text <- 
   paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
@@ -315,10 +315,10 @@ csum_map$popup_text <-
 
 leaflet() %>% 
   
-  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addProviderTiles(providers$CartoDB.Positron) %>% 
   
