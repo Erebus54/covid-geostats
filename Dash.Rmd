@@ -28,8 +28,7 @@ PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 
 # simplify the boundary file
 # this will help the maps run so much faster when rendering 
-PHU_bounds <- rmapshaper::ms_simplify(PHU_bounds, keep = 0.01, keep_shapes = TRUE, 
-                                        )
+PHU_bounds <- rmapshaper::ms_simplify(PHU_bounds, keep = 0.01, keep_shapes = TRUE)
 ```
 
 
@@ -62,7 +61,7 @@ leaflet() %>%
           lng = mean(bbox[1], bbox[3]), 
           zoom = 9) %>%
 
-  #addProviderTiles(providers$CartoDB.DarkMatter) %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>% 
   
   addPolygons(data  = csum_map,
               fillColor = ~pal(Total_Cases), 
@@ -152,7 +151,6 @@ Column {data-width=600}
 ### Dominant Acquisiton Type via Cases 
     
 ```{r}
-
 #finding the most common acquistion method 
 PHU_Summary$AcqMax <- colnames(PHU_Summary[,c("CloseContact", "Outbreak", "Travel", "Unknown")])[apply(PHU_Summary[,c("CloseContact", "Outbreak", "Travel", "Unknown")],1,which.max)]
 
@@ -162,8 +160,23 @@ Acq_map$AcqMax <- ifelse(Acq_map$AcqMax == "CloseContact", paste0("Close Contact
 
 #factpal <- colorFactor(topo.colors(3), Acq_map$AcqMax)
 AcqCats <- colorFactor(palette = c("#6EC5E9", "#F4B400", "#9b4a11"), 
-                       levels = c("Close Contact", "Outbreak", "Unkown"))
+                       levels = c("Close Contact", "Outbreak", "Unkown"),
+                       na.color = "#808080")
+
+
+Acq_map$popup_text <- 
+  paste0('<h4>', Acq_map$PHU_NAME_ENG, '</h4>', '<br>',
+         'Close Contact: ', '<b>', format(Acq_map$CloseContact, big.mark = ","), ' (', Acq_map$CloseContact_Pct, '%) ','</b>','</br>',
+         'Outbreak: ', '<b>', format(Acq_map$Outbreak, big.mark = ","), ' (', Acq_map$Outbreak_Pct, '%) ',  '</b>', '</br>',
+         'Travel: ', '<b>', format(Acq_map$Travel, big.mark = ","), ' (', Acq_map$Travel_Pct, '%) ',  '</b>', '</br>',
+         'Unknown: ', '<b>', format(Acq_map$Unknown, big.mark = ","), ' (', Acq_map$Unknown_Pct, '%) ',  '</b>', 
+         sep = " ") %>% 
+  
+  lapply(htmltools::HTML)
+
 leaflet() %>% 
+  
+  addProviderTiles(providers$CartoDB.Positron) %>% 
   
   setView(lat = mean(bbox[2], bbox[4]), 
           lng = mean(bbox[1], bbox[3]), 
@@ -176,27 +189,25 @@ leaflet() %>%
               
               color = "white", 
               dashArray = 3, 
-              fillOpacity = 1, 
+              fillOpacity = 0.5, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
                 color = "red", 
-                fillOpacity = 1, 
+                fillOpacity = 0.5, 
                 bringToFront = T), 
+              label =  ~as.character(PHU_NAME_ENG),
+              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
               
-              # labelOptions = labelOptions(
-              #   style = list("font-weight" = "normal", padding = "3px 8px"),
-              #   textsize = "15px",
-              #   direction = "auto")
-  ) %>%
+              popup = ~popup_text)%>%
   
-  addFullscreenControl() %>% 
-  
+  addFullscreenControl() %>%
   addResetMapButton() %>% 
-  
-  addLegend("bottomright", pal = AcqCats, values = Acq_map$AcqMax, 
-            title = "Acquisition Type", 
-            opacity = 1)
+  addLegend(pal = AcqCats, 
+            values = Acq_map$AcqMax,
+            title = NULL, 
+            opacity = 0.7, 
+            position  = "bottomright")
 ```
    
 Column {data-width=400}
@@ -205,6 +216,13 @@ Column {data-width=400}
 ### Table
 
 ```{r}
+DT::datatable(data = PHU_Summary[, c("Reporting_PHU", "CloseContact", "Outbreak", "Travel", "Unknown")] %>% dplyr::arrange(desc(CloseContact)),
+              class = 'cell-border stripe',
+              colnames = c("Public Health Unit", "Close Contact", "Outbreak", "Travel", "Unknown"), 
+              rownames = F, 
+              options = list(dom = 't',ordering = F, page_length = 34, lengthChange = FALSE,
+                             columnDefs = list(list(className = 'dt-center', targets="_all")))
+)
 ```   
  
 ### Histogram
