@@ -26,6 +26,7 @@ PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 # simplify the boundary file
 # this will help the maps run so much faster when rendering 
 PHU_bounds <- rmapshaper::ms_simplify(PHU_bounds, keep = 0.01, keep_shapes = TRUE)
+
 ```
 
 
@@ -146,8 +147,8 @@ Column {data-width=600 .tabset .tabset-fade}
 pal <- colorNumeric("Blues", domain = csum_map$Cases_pC, reverse = F)
 
 #centers focus to current highest region via total cases 
-bbox <- st_bbox(csum_map %>% dplyr::filter(Cases_pC == max(Cases_pC))) %>% 
-  as.vector()
+# bbox <- st_bbox(csum_map %>% dplyr::filter(Cases_pC == max(Cases_pC))) %>% 
+#   as.vector()
 
 csum_map$popup_text <- 
   paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
@@ -160,9 +161,9 @@ csum_map$popup_text <-
 leaflet() %>% 
   
   #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  setView(lat = mean(bbox[2], bbox[4]), 
-          lng = mean(bbox[1], bbox[3]), 
-          zoom = 9) %>%
+  # setView(lat = mean(bbox[2], bbox[4]), 
+  #         lng = mean(bbox[1], bbox[3]), 
+  #         zoom = 9) %>%
   
   addProviderTiles(providers$CartoDB.Positron) %>% 
   
@@ -475,14 +476,18 @@ About this Site
 #### Code
 Code and input data used to generate this web app are available on [Github](https://github.com/Erebus54/covid-geostats).
 
-#### Sources 
+#### Dataset Sources:  
 
-**Status of COVID-19 cases in Ontario** : [Open Data Ontario](https://data.ontario.ca/dataset/status-of-covid-19-cases-in-ontario), updated daily, which presents a breakdown by region, case status, age range of cases 
+**Confirmed positive cases of COVID-19 in Ontario** : [Open Data Ontario](https://data.ontario.ca/dataset/confirmed-positive-cases-of-covid-19-in-ontario), updated daily, breakdown by:  region, case status, age, outcome, & acquisition information
 
-**Census Profile, 2016 Census** : [StatsCan](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/index.cfm?Lang=E&TABID=1), queried this to obtain the areal size and population figures to compute the per capita metrics 
+**Census Profile, 2016 Census** : [StatsCan](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/index.cfm?Lang=E&TABID=1), queried to obtain the areal size and population figures to compute the per capita metrics via Public Health Units
 
 **Ministry of Health Public Health Unit Boundaries** : [Ontario GeoHub](https://geohub.lio.gov.on.ca/datasets/d8fba69152e4408dabfe70e85a2688d2_44), contains the geographic boundaries of all 34 Public Health Units (PHUs) in Ontario, based on Statistics Canada’s Health Region Boundary File (2018)
 
+**COVID-19 hospital metrics in Ontario by Local Health Integration Network (LHIN) regions** : [Ontario Open Data](https://data.ontario.ca/dataset/covid-19-hospital-metrics-in-ontario-by-local-health-integration-network-lhin-regions) compiled daily hospitalizations via LHIN
+
+**Ontario  Local Health Integration Network (LHIN) Region Boundaries** : [Ontario Open Data] (https://data.ontario.ca/dataset/local-health-integration-network-office-lhin-locations)
+Geographic information for Local Health Integration Networks (LHINs)
 #### Author 
 
 Patrick Schnurbusch 

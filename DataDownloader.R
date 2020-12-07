@@ -146,10 +146,11 @@ CaseStatus <- CaseStatus %>%
 
 
 
-
-
-
-
+LHIN_URL <- "https://data.ontario.ca/dataset/8f3a449b-bde5-4631-ada6-8bd94dbc7d15/resource/e760480e-1f95-4634-a923-98161cfb02fa/download/lhin_hospital_icu_covid_data.csv"
+LHIN <- data.table::fread(LHIN_URL, encoding = 'UTF-8',data.table = F)
+LHIN$date <- as.Date(LHIN$date)
+LHIN <- LHIN %>% 
+  dplyr::arrange(date)
 
 
 PHU_csums <- CaseStatus
@@ -158,7 +159,7 @@ PHU_csums <- CaseStatus
 
 
 
-#write data to drive 
+#write PHU Summary File to drive 
 #create .csv for each date of dataset
 dirPath <- paste(getwd(), "/dataset/", sep = "")
 
@@ -167,6 +168,16 @@ do.call(file.remove, list(list.files(dirPath, full.names = TRUE)))
 fileName = paste(dirPath, 'PHU_Summary.csv',sep = '')
 #Write Case Status File 
 write.csv(PHU_csums, 
+          file = fileName, 
+          fileEncoding = 'UTF-8', 
+          row.names = F)
+
+
+
+# Write LHN data 
+fileName = paste(dirPath, 'COVID-19 hospital metrics in Ontario by Local Health Integration Network (LHIN) regions.csv',sep = '')
+#Write LHIN File 
+write.csv(LHIN, 
           file = fileName, 
           fileEncoding = 'UTF-8', 
           row.names = F)
