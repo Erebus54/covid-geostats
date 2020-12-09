@@ -1,32 +1,49 @@
 ---
-title: "Covid GeoStats"
+title: "Ontario GeoStats"
 output: 
   flexdashboard::flex_dashboard:
-    theme: cosmo
+    css: styles.css
+    orientation: columns
+    social: ["twitter", "facebook", "linkedin"]
+    theme: paper
 runtime: shiny
 ---
+
 
 ```{r setup, include=FALSE}
 library(rsconnect)
 library(flexdashboard)
+library(stringr) 
+library(dplyr)
+
 library(DT)
 library(plotly)
 library(RColorBrewer)
 
 library(leaflet) 
 library(leaflet.extras)
-
 library(sf)
 library(rmapshaper)
+
+# <style>                     
+# .navbar {
+#   background-color:black;
+#   border-color:white;
+# }
+# .navbar-brand {
+# color:#04d9ff!important;
+# }
+# </style>
+
 #download summary data 
 PHU_Summary <- read.csv("./dataset/PHU_Summary.csv", encoding = "UTF-8")
-#read spatial boundaries data 
+
+#read spatial boundaries data for Public Health Units 
 PHU_bounds <- readRDS("./spatial files/PHU_Boundaries.rds")
 
 # simplify the boundary file
 # this will help the maps run so much faster when rendering 
 PHU_bounds <- rmapshaper::ms_simplify(PHU_bounds, keep = 0.01, keep_shapes = TRUE)
-
 ```
 
 
@@ -42,51 +59,45 @@ Column {data-width=600}
 csum_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Reporting_PHU" )
 pal <- colorNumeric("viridis", domain = csum_map$Total_Cases, reverse = F)
 
-#centers focus to current highest region via total cases 
-# bbox <- st_bbox(csum_map %>% dplyr::filter(Total_Cases == max(Total_Cases))) %>% 
-#   as.vector()
 
-csum_map$popup_text <- 
-  paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
-         'Total Cases: ', '<b>', format(csum_map$Total_Cases, big.mark = ","),'</b>','</br>',
-         sep = " ") %>% 
-  
-  lapply(htmltools::HTML)
+labels <- sprintf(
+  "<strong>%s</strong><br/>%s Total Cases",
+  csum_map$PHU_NAME_ENG, csum_map$Total_Cases
+) %>% lapply(htmltools::HTML)
 
+bbox <- st_bbox(csum_map) %>% 
+  as.vector()
 
 leaflet() %>% 
-  
-  # #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  
+  addProviderTiles(providers$CartoDB.DarkMatter) %>%
   addPolygons(data  = csum_map,
               fillColor = ~pal(Total_Cases), 
-              weight = 1, 
+              weight = 0.5, 
               opacity = 1, 
               
               color = "white", 
               dashArray = 3, 
-              fillOpacity = 0.5, 
+              fillOpacity = 0.1, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
-                color = "red", 
+                color = "#04d9ff", 
                 fillOpacity = 0.5, 
                 bringToFront = T),
               
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              popup = ~popup_text) %>%
+              label = labels,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
   
   addFullscreenControl() %>% 
   addResetMapButton() %>% 
   addLegend("bottomright", pal = pal, values = csum_map$Total_Cases, 
             title = "Total Cases", 
-            opacity = 0.5)
+            opacity = 0.5) %>% 
+  fitBounds(lng1 = bbox[1],lng2 = bbox[3], 
+              lat1 = bbox[2], lat2 = bbox[4])
 ```
    
 Column {data-width=400}
@@ -144,80 +155,63 @@ Column {data-width=600 .tabset .tabset-fade}
 ### Cases
 
 ```{r}
-pal <- colorNumeric("Blues", domain = csum_map$Cases_pC, reverse = F)
+pal <- colorBin(palette = c("#00000000","#04d9ff"), domain = csum_map$Cases_pC, bins = 4, 
+                pretty=F, reverse = F)
 
-#centers focus to current highest region via total cases 
-# bbox <- st_bbox(csum_map %>% dplyr::filter(Cases_pC == max(Cases_pC))) %>% 
-#   as.vector()
-
-csum_map$popup_text <- 
-  paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
-         'Cases per Capita: ', '<b>', format(csum_map$Cases_pC, big.mark = ","),'</b>','</br>',
-         sep = " ") %>% 
-  
-  lapply(htmltools::HTML)
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g Case per Capita",
+  csum_map$PHU_NAME_ENG, csum_map$Cases_pC
+) %>% lapply(htmltools::HTML)
 
 
 leaflet() %>% 
   
-  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  
+  addProviderTiles(providers$CartoDB.DarkMatterNoLabels) %>% 
   addPolygons(data  = csum_map,
               fillColor = ~pal(Cases_pC), 
               weight = 1, 
               opacity = 1, 
               
               color = "white", 
-              dashArray = 3, 
-              fillOpacity = 0.5, 
+              dashArray = "1", 
+              fillOpacity = 0.25, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
-                color = "red", 
+                color = "#04d9ff", 
                 fillOpacity = 0.5, 
                 bringToFront = T),
               
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              popup = ~popup_text) %>%
+              label = labels,
+              labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"),
+                                          textsize = "15px",
+                                          direction = "auto")) %>%
   
   addFullscreenControl() %>% 
   addResetMapButton() %>% 
   addLegend("bottomright", pal = pal, values = csum_map$Cases_pC, 
             title = "Cases per Capita (100,000)", 
-            opacity = 0.5)
+            opacity = 0.5) %>% 
+  
+    fitBounds(lng1 = bbox[1],lng2 = bbox[3], 
+              lat1 = bbox[2], lat2 = bbox[4])
 ```
 
 ### Recovered 
 
 ```{r}
-pal <- colorNumeric("Greens", domain = csum_map$Recovered_pC, reverse = F)
+pal <- colorBin(palette = c("#00000000","Blue"), domain = csum_map$Recovered_pC, bins = 4, 
+                pretty=F, reverse = F)
 
-#centers focus to current highest region via total cases 
-# bbox <- st_bbox(csum_map %>% dplyr::filter(Recovered_pC == max(Recovered_pC))) %>% 
-#   as.vector()
-
-csum_map$popup_text <- 
-  paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
-         'Recoveries per Capita: ', '<b>', format(csum_map$Recovered_pC, big.mark = ","),'</b>','</br>',
-         sep = " ") %>% 
-  
-  lapply(htmltools::HTML)
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g Recoveries per Capita",
+  csum_map$PHU_NAME_ENG, csum_map$Recovered_pC
+) %>% lapply(htmltools::HTML)
 
 
 leaflet() %>% 
   
-  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
-  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addProviderTiles(providers$CartoDB.DarkMatterNoLabels) %>% 
   
   addPolygons(data  = csum_map,
               fillColor = ~pal(Recovered_pC), 
@@ -225,103 +219,43 @@ leaflet() %>%
               opacity = 1, 
               
               color = "white", 
-              dashArray = 3, 
-              fillOpacity = 0.5, 
+              dashArray = "1", 
+              fillOpacity = 0.25, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
-                color = "red", 
+                color = "#04d9ff", 
                 fillOpacity = 0.5, 
                 bringToFront = T),
               
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              popup = ~popup_text) %>%
+              label = labels,
+              labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"),
+                                          textsize = "15px",
+                                          direction = "auto")) %>%
   
   addFullscreenControl() %>% 
   addResetMapButton() %>% 
   addLegend("bottomright", pal = pal, values = csum_map$Recovered_pC, 
-            title = "Recoveries per Capita (100,000)", 
+            title = "Cases per Capita (100,000)", 
             opacity = 0.5)
 ```
 
-### Actives 
-
-```{r}
-pal <- colorNumeric("Oranges", domain = csum_map$Actives_pC, reverse = F)
-
-#centers focus to current highest region via total cases 
-# bbox <- st_bbox(csum_map %>% dplyr::filter(Actives_pC == max(Actives_pC))) %>% 
-#   as.vector()
-
-csum_map$popup_text <- 
-  paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
-         'Active Cases per Capita: ', '<b>', format(csum_map$Actives_pC, big.mark = ","),'</b>','</br>',
-         sep = " ") %>% 
-  
-  lapply(htmltools::HTML)
-
-
-leaflet() %>% 
-  
-  #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  
-  addPolygons(data  = csum_map,
-              fillColor = ~pal(Actives_pC), 
-              weight = 1, 
-              opacity = 1, 
-              
-              color = "white", 
-              dashArray = 3, 
-              fillOpacity = 0.5, 
-              
-              highlightOptions = highlightOptions(
-                weight = 2, 
-                color = "red", 
-                fillOpacity = 0.5, 
-                bringToFront = T),
-              
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              popup = ~popup_text) %>%
-  
-  addFullscreenControl() %>% 
-  addResetMapButton() %>% 
-  addLegend("bottomright", pal = pal, values = csum_map$Actives_pC, 
-            title = "Active Cases per Capita (100,000)", 
-            opacity = 0.5)
-```
 
 ### Deaths 
 
 ```{r}
-pal <- colorNumeric("Reds", domain = csum_map$Deaths_pC, reverse = F)
+pal <- colorBin(palette = c("#00000000","Blue"), domain = csum_map$Deaths_pC, bins = 4, 
+                pretty=F, reverse = F)
 
-#centers focus to current highest region via total cases 
-# bbox <- st_bbox(csum_map %>% dplyr::filter(Deaths_pC == max(Deaths_pC))) %>% 
-#   as.vector()
-
-csum_map$popup_text <- 
-  paste0('<h4>', csum_map$PHU_NAME_ENG, '</h4>', '<br>',
-         'Deaths Cases per Capita: ', '<b>', format(csum_map$Deaths_pC, big.mark = ","),'</b>','</br>',
-         sep = " ") %>% 
-  
-  lapply(htmltools::HTML)
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g Deaths per Capita",
+  csum_map$PHU_NAME_ENG, csum_map$Deaths_pC
+) %>% lapply(htmltools::HTML)
 
 
 leaflet() %>% 
   
-  # #fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
-  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addProviderTiles(providers$CartoDB.DarkMatterNoLabels) %>% 
   
   addPolygons(data  = csum_map,
               fillColor = ~pal(Deaths_pC), 
@@ -329,18 +263,19 @@ leaflet() %>%
               opacity = 1, 
               
               color = "white", 
-              dashArray = 3, 
-              fillOpacity = 0.5, 
+              dashArray = "1", 
+              fillOpacity = 0.25, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
-                color = "red", 
+                color = "#04d9ff", 
                 fillOpacity = 0.5, 
                 bringToFront = T),
               
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              popup = ~popup_text) %>%
+              label = labels,
+              labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"),
+                                          textsize = "15px",
+                                          direction = "auto")) %>%
   
   addFullscreenControl() %>% 
   addResetMapButton() %>% 
@@ -378,12 +313,13 @@ Acq_map <- merge(PHU_bounds, PHU_Summary, by.x = "PHU_NAME_ENG", by.y = "Reporti
 Acq_map$AcqMax <- ifelse(Acq_map$AcqMax == "CloseContact", paste0("Close Contact"), Acq_map$AcqMax)
 
 #factpal <- colorFactor(topo.colors(3), Acq_map$AcqMax)
-AcqCats <- colorFactor(palette = c("#6EC5E9", "#F4B400", "#9b4a11"), 
+AcqCats <- colorFactor(palette = c("#04d9ff", "#fcec0c", "#9b4a11"), 
                        levels = c("Close Contact", "Outbreak", "Unkown"),
-                       na.color = "#808080")
+                       domain = Acq_map$AcqMax)
 
-Acq_map$popup_text <- 
-  paste0('<h4>', Acq_map$PHU_NAME_ENG, '</h4>', '<br>',
+labels <- 
+  paste0('<strong>', Acq_map$PHU_NAME_ENG, '</strong>', '<br>','<br>',
+         'Most Acquired Via: ', '<b>',Acq_map$AcqMax,'</b>', '<br>','<br>',
          'Close Contact: ', '<b>', format(Acq_map$CloseContact, big.mark = ","), ' (', Acq_map$CloseContact_Pct, '%) ','</b>','</br>',
          'Outbreak: ', '<b>', format(Acq_map$Outbreak, big.mark = ","), ' (', Acq_map$Outbreak_Pct, '%) ',  '</b>', '</br>',
          'Travel: ', '<b>', format(Acq_map$Travel, big.mark = ","), ' (', Acq_map$Travel_Pct, '%) ',  '</b>', '</br>',
@@ -391,29 +327,26 @@ Acq_map$popup_text <-
          sep = " ") %>% lapply(htmltools::HTML)
 
 leaflet() %>% 
-  addProviderTiles(providers$CartoDB.Positron) %>% 
-  # setView(lat = mean(bbox[2], bbox[4]), 
-  #         lng = mean(bbox[1], bbox[3]), 
-  #         zoom = 9) %>%
-  
+  addProviderTiles(providers$CartoDB.DarkMatter) %>% 
   addPolygons(data  = Acq_map,
               fillColor = ~AcqCats(AcqMax), 
               weight = 1, 
               opacity = 1, 
               
               color = "white", 
-              dashArray = 3, 
+              dashArray = 1, 
               fillOpacity = 0.5, 
               
               highlightOptions = highlightOptions(
                 weight = 2, 
-                color = "red", 
-                fillOpacity = 0.5, 
+                color = "#04d9ff", 
+                fillOpacity = 0.2, 
                 bringToFront = T), 
-              label =  ~as.character(PHU_NAME_ENG),
-              labelOptions = labelOptions(noHide = F,direction = "top", textsize = "15px"),
-              
-              popup = ~popup_text)%>%
+              label = labels,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
   
   addFullscreenControl() %>%
   addResetMapButton() %>% 
@@ -488,6 +421,10 @@ Code and input data used to generate this web app are available on [Github](http
 
 **Ontario  Local Health Integration Network (LHIN) Region Boundaries** : [Ontario Open Data] (https://data.ontario.ca/dataset/local-health-integration-network-office-lhin-locations)
 Geographic information for Local Health Integration Networks (LHINs)
+
+**COVID-19 testing locations** : [Ontario Open Data](https://data.ontario.ca/dataset/covid-19-assessment-centre-locations)
+List of all COVID-19 Assessment centres 
+
 #### Author 
 
 Patrick Schnurbusch 
